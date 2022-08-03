@@ -7,6 +7,21 @@ class User {
     email: string;
     password: string;
     isAdmin: boolean;
+    username?: string;
+    preferredWorkCenters?: Array<string>;
+    skillsOrInterests?: Array<string>;
+    availabilityTimes?: Array<string>;
+    address?: string;
+    phoneNumbers?: Array<string>;
+    educationalBackground?: string;
+    currentLicenses?: Array<string>;
+    emergencyContactName?: string;
+    emergencyContactPhone?: string;
+    emergencyContactEmail?: string;
+    emergencyContactAddress?: string;
+    hasLicense?: boolean;
+    hasSSN?: boolean
+    approvalStatus?: string;
 
     constructor(userId: number, firstName: string, lastName: string, email: string, password: string, isAdmin: boolean) {
         this.userId = userId;
