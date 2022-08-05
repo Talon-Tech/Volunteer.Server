@@ -2,26 +2,12 @@ import bcrypt from 'bcrypt';
 
 class User {
     userId: number;
+    username?: string;
     firstName: string;
     lastName: string;
     email: string;
     password: string;
     isAdmin: boolean;
-    username?: string;
-    preferredWorkCenters?: Array<string>;
-    skillsOrInterests?: Array<string>;
-    availabilityTimes?: Array<string>;
-    address?: string;
-    phoneNumbers?: Array<string>;
-    educationalBackground?: string;
-    currentLicenses?: Array<string>;
-    emergencyContactName?: string;
-    emergencyContactPhone?: string;
-    emergencyContactEmail?: string;
-    emergencyContactAddress?: string;
-    hasLicense?: boolean;
-    hasSSN?: boolean
-    approvalStatus?: string;
 
     constructor(userId: number, firstName: string, lastName: string, email: string, password: string, isAdmin: boolean) {
         this.userId = userId;
@@ -38,7 +24,7 @@ class User {
 
     // Return true if all the properties are filled in
     CompleteUser() {
-        if (this.userId != null && this.firstName.length > 0 && this.lastName.length > 0 && this.email.length > 0 && this.password.length > 0) {
+        if (this.userId != null && this.username && this.firstName.length > 0 && this.lastName.length > 0 && this.email.length > 0 && this.password.length > 0) {
             return true;
         }
         else {

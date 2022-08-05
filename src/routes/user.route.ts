@@ -75,7 +75,7 @@ userRoute.post('', async (req, res, next) => {
 });
 
 //PATCH update a user
-userRoute.patch('/users/:userId', (req, res, next) => {
+userRoute.patch('/:userId', (req, res, next) => {
 
 });
 
