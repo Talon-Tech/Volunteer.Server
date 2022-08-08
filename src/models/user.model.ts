@@ -1,44 +1,42 @@
 import bcrypt from 'bcrypt';
 
 class User {
-    userId: number;
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-    isAdmin: boolean;
-    username?: string;
-    preferredWorkCenters?: Array<string>;
-    skillsOrInterests?: Array<string>;
-    availabilityTimes?: Array<string>;
-    address?: string;
-    phoneNumbers?: Array<string>;
-    educationalBackground?: string;
-    currentLicenses?: Array<string>;
-    emergencyContactName?: string;
-    emergencyContactPhone?: string;
-    emergencyContactEmail?: string;
-    emergencyContactAddress?: string;
-    hasLicense?: boolean;
-    hasSSN?: boolean
-    approvalStatus?: string;
+    userId: number | null = null;
+    username: string | null = null;
+    firstName: string | null = null;
+    lastName: string | null = null;
+    email: string | null = null;
+    password: string | null = null;
 
-    constructor(userId: number, firstName: string, lastName: string, email: string, password: string, isAdmin: boolean) {
-        this.userId = userId;
+    preferredWorkCenters: Array<string> | null = null;
+    skillsOrInterests: Array<string>  | null = null;
+    availabilityTimes: Array<string> | null = null;
+    address: string  | null = null;
+    phoneNumbers: Array<string>  | null = null;
+    educationalBackground: string  | null = null;
+    currentLicenses: Array<string> | null = null;
+    emergencyContactName: string  | null = null;
+    emergencyContactPhone: string  | null = null;
+    emergencyContactEmail: string  | null = null;
+    emergencyContactAddress: string  | null = null;
+    hasLicense: boolean  | null = null;
+    hasSSN: boolean | null = null;
+    approvalStatus: string  | null = null;
+
+    constructor(firstName: string, lastName: string, email: string, password: string) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = password;
-        this.isAdmin = isAdmin;
     }
 
     static ToUser(obj: any): User | boolean {
-        return obj.hasOwnProperty('userId') && obj.hasOwnProperty('firstName') && obj.hasOwnProperty('lastName') && obj.hasOwnProperty('email') ? new User(obj.userId, obj.firstName, obj.lastName, obj.email, '', obj.isAdmin) : false;
+        return obj.hasOwnProperty('firstName') && obj.hasOwnProperty('lastName') && obj.hasOwnProperty('email') ? new User(obj.firstName, obj.lastName, obj.email, obj.password) : false;
     }
 
     // Return true if all the properties are filled in
     CompleteUser() {
-        if (this.userId != null && this.firstName.length > 0 && this.lastName.length > 0 && this.email.length > 0 && this.password.length > 0) {
+        if (this.username && this.firstName && this.lastName && this.email && this.password) {
             return true;
         }
         else {
@@ -46,13 +44,37 @@ class User {
         }
     }
 
+    CompleteVolunteer(): boolean {
+        if (
+            this.CompleteUser() &&
+            this.preferredWorkCenters &&
+            this.skillsOrInterests &&
+            this.availabilityTimes &&
+            this.address &&
+            this.phoneNumbers &&
+            this.educationalBackground &&
+            this.currentLicenses &&
+            this.emergencyContactName &&
+            this.emergencyContactPhone &&
+            this.emergencyContactEmail &&
+            this.emergencyContactAddress &&
+            this.hasLicense &&
+            this.hasSSN &&
+            this.approvalStatus
+        ) {
+            return true;
+        } else {
+            return false
+        }
+    }
+
     validatePassword(password: string) {
-        return bcrypt.compare(password, this.password);
+        return bcrypt.compare(password, this.password!);
     }
 
     // Return a user without the password property
     GetPasswordlessUser() {
-        let pwdLess = new User(-1, '', '', '', '', false);
+        let pwdLess = new User('', '', '', '');
         Object.assign(pwdLess, this);
         let returnObj = <any>pwdLess;
         delete returnObj.password;
@@ -61,13 +83,4 @@ class User {
 
 }
 
-// POPULATE USER ARRAY 
-const userArray: any[] = [];
-userArray.push(new User(1, "james", "taylor", "tayj0016@gmail.com", "test", true));
-bcrypt.genSalt(10, function (err, saltRounds) {
-    bcrypt.hash(userArray[0].password, saltRounds, function (err, hash) {
-        userArray[0].password = hash;
-    });
-});
-
-export { User, userArray }
+export default User;
