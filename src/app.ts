@@ -6,11 +6,15 @@ import * as dotenv from "dotenv";
 import mysql from "mysql2";
 
 import { userRoute } from './routes/user.route';
+import { opportunityRoute } from './routes/opportunity.route'
 
 import User from './models/user.model';
+import { Opportunity } from './models/opportunity.model';
 import { UserDb } from './storage/UserDb';
 import { AdminDb } from './storage/AdminDb';
 import { VolunteerDb } from './storage/VolunteerDb';
+import { OpportunityDb } from './storage/opportunityDb';
+
 
 const saltRounds = 10;
 const SECRET = 'C743BDE82646FD4CF7C43DBCE89CF';
@@ -41,7 +45,6 @@ app.use(cookieParser()); //Cookie parser
 
 
 // POPULATE USER ARRAY 
-
 let randoAccount = new User("james", "taylor", "tayj0016@gmail.com", "test");
 randoAccount.address = "123 Lol";
 randoAccount.approvalStatus = "Approved";
@@ -68,7 +71,14 @@ bcrypt.genSalt(10, function (err, saltRounds) {
     });
 });
 
+// POPULATE USER ARRAY 
+let opportunity1 = new Opportunity("Cleanup", new Date());
+let opportunity2 = new Opportunity("Planting", new Date());
+OpportunityDb.push(opportunity1);
+OpportunityDb.push(opportunity2);
+
 app.use('/users', userRoute);
+app.use('/opportunities', opportunityRoute);
 
 app.get('/', (req, res) => {
     res.send('Hello World!')
