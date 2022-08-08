@@ -9,7 +9,7 @@
     "start": "node index.js",
     "dev": "nodemon index.ts"
   },
-  "author": "James W. Taylor",
+  "author": "Talon Tech",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.0.1",

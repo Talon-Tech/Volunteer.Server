@@ -2,9 +2,12 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import * as dotenv from "dotenv";
 
-import { User, userArray } from '../models/user.model';
+import User from '../models/user.model';
+import { UserDb } from '../storage/UserDb';
 import { JWTAuth } from '../utils/jwt.util';
 import { ErrorMessage } from '../models/error.model';
+import { AdminDb } from '../storage/AdminDb';
+import { VolunteerDb } from '../storage/VolunteerDb';
 
 dotenv.config();
 const saltRounds = 10;
@@ -14,16 +17,18 @@ let userRoute = express.Router();
 
 // GET all users 
 userRoute.get('', (req, res, next) => {
-    res.status(200).send(userArray);
+    res.status(200).send(UserDb.Users);
 });
 
 // GET current user
 userRoute.get("/:userId", (req, res, next) => {
     let currentUser = JWTAuth.VerifyToken(req.headers);
-    if (currentUser instanceof User) {
-        let foundUser = userArray.filter(u => u.userId === req.params.userId);
-        if (foundUser.length > 0)
-            res.status(200).send(foundUser[0]);
+
+    if (currentUser) {
+        let foundUser = UserDb.findById(Number.parseInt(req.params.userId));
+
+        if (foundUser)
+            res.status(200).send(foundUser);
         else
             res.status(404).send(new ErrorMessage(404, 'User not Found'));
     }
@@ -33,13 +38,22 @@ userRoute.get("/:userId", (req, res, next) => {
 
 // GET login user and create authToken
 userRoute.get('/:userId/:password', (req, res, next) => {
-    // let user = userArray.find(u => (u.userId === req.params.userId));
-    let user = userArray.filter(u => u.userId === parseInt(req.params.userId));
+    let user = UserDb.findById(parseInt(req.params.userId));
+    let admin = AdminDb.findById(parseInt(req.params.userId));
+    let volunteer = VolunteerDb.findById(parseInt(req.params.userId));
 
-    if (user.length > 0) {
-        user[0].validatePassword(req.params.password).then((validPwd: any) => {
+    let roles = ["User"];
+
+    if (user !== undefined) {
+        if(admin !== undefined) {
+            roles = [...roles, "Admin"];    
+        }
+        if(volunteer !== undefined) {
+            roles = [...roles, "Volunteer"];
+        }
+        user.validatePassword(req.params.password)?.then((validPwd: any) => {
             if (validPwd) {
-                let token = JWTAuth.GenerateWebToken(user[0])
+                let token = JWTAuth.GenerateWebToken(user!, roles)
                 res.status(200).send({ token: token });
             }
             else {
@@ -56,37 +70,71 @@ userRoute.get('/:userId/:password', (req, res, next) => {
 // POST new user
 userRoute.post('', async (req, res, next) => {
     let obj = req.body;
-    let hashedPassword = await bcrypt.hash(obj.password, saltRounds)
-    let userId = 0
-    let lastElement = userArray[userArray.length - 1];
-    if (lastElement !== undefined) {
-        userId = lastElement.userId + 1;
-    }
-    // console.log(obj);
-    let newUser = new User(userId, obj.firstName, obj.lastName, obj.email, hashedPassword, obj.isAdmin);
+    let hashedPassword = await bcrypt.hash(obj.password, saltRounds);
+    let newUser = new User(obj.firstName, obj.lastName, obj.email, hashedPassword);
 
     if (newUser.CompleteUser()) {
-        userArray.push(newUser);
+        UserDb.push(newUser);
         res.status(201).send(newUser.GetPasswordlessUser());
     }
     else {
-        res.status(406).send({ message: 'All properties are required for a new user userId, firstName, lastName, mail, password', status: 406 });
+        res.status(406).send({ message: 'All properties are required for a new user: firstName, lastName, mail, password', status: 406 });
     }
 });
 
 //PATCH update a user
-userRoute.patch('/:userId', (req, res, next) => {
+userRoute.patch('', (req, res, next) => {
 
+    const currentUser = JWTAuth.VerifyToken(req.headers);
+
+    if (currentUser) {
+
+        const { UserData, Roles } = req.body;
+
+        console.log()
+        const foundUser = UserDb.findById(Number.parseInt(UserData.userId));
+        if (foundUser) {
+
+            console.log('editing user');
+            UserDb.edit(UserData);
+
+            if(Roles.includes("Volunteer")) {
+                VolunteerDb.edit(UserData);
+            }
+            if(Roles.includes("Admin")) {
+                AdminDb.edit(UserData);
+            }
+
+            res.status(204).send('User Edited');
+        }
+        else
+            res.status(404).send(new ErrorMessage(404, 'User not Found'));
+    }
+    else
+        res.status(401).send(new ErrorMessage(401, 'User not Found'));
 });
 
 //DELETE user
 userRoute.delete('/:userId', (req, res, next) => {
-    let currentUser = JWTAuth.VerifyToken(req.headers);
+    const { userData, roles } = req.body;
+    const currentUser = JWTAuth.VerifyToken(req.headers);
+
     if (currentUser instanceof User) {
-        let foundUser = userArray.filter(u => u.userId == req.params.userId);
-        if (foundUser.length > 0) {
-            userArray.splice(userArray.findIndex(u => u.userId === req.params.userId), 1);
-            res.status(204).send('');
+        const foundUser = UserDb.findById(Number.parseInt(userData.userId));
+        if (foundUser) {
+
+            console.log('editing user');
+            UserDb.delete(userData);
+
+            if(roles.includes("Volunteer")) {
+                VolunteerDb.delete(userData);
+            }
+            if(roles.includes("Admin")) {
+                AdminDb.delete(userData);
+            }
+
+            res.status(204).send('User Edited');
+
         }
         else
             res.status(404).send(new ErrorMessage(404, 'User not Found'));
