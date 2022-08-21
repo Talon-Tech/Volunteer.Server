@@ -37,7 +37,7 @@ opportunityRoute.get("/:oppId", (req, res, next) => {
 // POST new opportunities 
 opportunityRoute.post('', (req, res, next) => {
     let obj = req.body;
-    let newOpportunity = new Opportunity(obj.name, obj.date);
+    let newOpportunity = new Opportunity(obj.name, obj.center, obj.date);
     OpportunityDb.push(newOpportunity)
     res.status(201).send(newOpportunity);
 });

@@ -44,7 +44,6 @@ app.use(cookieParser()); //Cookie parser
 
 
 // POPULATE USER ARRAY 
-
 let randoAccount = new User("james", "taylor", "tayj0016@gmail.com", "test");
 randoAccount.address = "123 Lol";
 randoAccount.approvalStatus = "Approved";
@@ -72,8 +71,8 @@ bcrypt.genSalt(10, function (err, saltRounds) {
 });
 
 // POPULATE USER ARRAY 
-let opportunity1 = new Opportunity("Cleanup", new Date());
-let opportunity2 = new Opportunity("Planting", new Date());
+let opportunity1 = new Opportunity("Cleanup", "Environment Foundation", new Date());
+let opportunity2 = new Opportunity("Planting", "Trees for All", new Date());
 OpportunityDb.push(opportunity1);
 OpportunityDb.push(opportunity2);
 
