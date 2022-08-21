@@ -69,12 +69,24 @@ userRoute.get('/:userId/:password', (req, res, next) => {
 
 // POST new user
 userRoute.post('', async (req, res, next) => {
-    let obj = req.body;
-    let hashedPassword = await bcrypt.hash(obj.password, saltRounds);
-    let newUser = new User(obj.firstName, obj.lastName, obj.email, hashedPassword);
+    const { UserData, Roles } = req.body;
+    
+    let hashedPassword = await bcrypt.hash(UserData.password, saltRounds);
+    let newUser = new User(UserData.firstName, UserData.lastName, UserData.email, hashedPassword);
+    
+    Object.assign(newUser, UserData);
 
     if (newUser.CompleteUser()) {
         UserDb.push(newUser);
+
+        if (newUser.CompleteVolunteer() && Roles.includes("Volunteer")) {
+            VolunteerDb.push(newUser)
+        }
+
+        if (Roles.includes("Admin")) {
+            AdminDb.push(newUser);
+        }
+
         res.status(201).send(newUser.GetPasswordlessUser());
     }
     else {
