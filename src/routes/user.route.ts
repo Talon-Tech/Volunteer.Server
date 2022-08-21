@@ -117,6 +117,7 @@ userRoute.patch('', (req, res, next) => {
 //DELETE user
 userRoute.delete('/:userId', (req, res, next) => {
     const { userData, roles } = req.body;
+    console.log(req.headers);
     const currentUser = JWTAuth.VerifyToken(req.headers);
 
     if (currentUser instanceof User) {
